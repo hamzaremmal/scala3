@@ -33,6 +33,7 @@ import Trees.*
 import Decorators.*
 import config.Feature
 import quoted.QuotePatterns
+import inlines.Inlines
 
 import dotty.tools.tasty.{TastyBuffer, TastyReader}
 import TastyBuffer.*
@@ -1171,6 +1172,19 @@ class TreeUnpickler(reader: TastyReader,
         val stats = rdr.readIndexedStats(localDummy, end)
         tparams ++ vparams ++ stats
       })
+      if cls.isInlineTrait then
+        val statsStart = currentAddr
+        cls.addAnnotation(LazyBodyAnnotation { (ctx0: Context) ?=>
+          val ctx1 = localContext(cls)(using ctx0).addMode(Mode.ReadPositions)
+          inContext(sourceChangeContext(Addr(0))(using ctx1)) {
+            // avoids space leaks by not capturing the current context
+
+            val fork = forkAt(statsStart)
+            val stats = fork.readIndexedStats(localDummy, end)
+            val inlinedMembers = (tparams ++ vparams ++ stats).filter(member => Inlines.isInlineableFromInlineTrait(cls, member))
+            Block(inlinedMembers, unitLiteral).withSpan(cls.span)
+          }
+        })
       NamerOps.addConstructorProxies(cls)
       NamerOps.addContextBoundCompanions(cls)
       setSpan(start,

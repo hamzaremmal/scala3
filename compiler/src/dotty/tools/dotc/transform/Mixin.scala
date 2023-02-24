@@ -96,7 +96,7 @@ object Mixin {
  *                <mods> def x_=(y: T) = ()
  *
  *          4.5 (done in `mixinForwarders`) For every method
- *          `<mods> def f[Ts](ps1)...(psN): U` in M` that needs to be disambiguated:
+ *          `<mods> def f[Ts](ps1)...(psN): U` in M that needs to be disambiguated:
  *
  *                <mods> def f[Ts](ps1)...(psN): U = super[M].f[Ts](ps1)...(psN)
  *
@@ -186,6 +186,7 @@ class Mixin extends MiniPhase with SymTransformer { thisPhase =>
     sym.isGetter && !wasOneOf(sym, DeferredOrLazy | ParamAccessor)
       && atPhase(thisPhase) { !sym.setter.exists }
       && !sym.isConstExprFinalVal
+      && !sym.owner.isInlineTrait
 
   private def makeTraitSetter(getter: TermSymbol)(using Context): Symbol =
     getter.copy(
@@ -256,6 +257,7 @@ class Mixin extends MiniPhase with SymTransformer { thisPhase =>
           transformFollowingDeep(superRef(baseCls.primaryConstructor).appliedToNone) :: Nil
 
     def traitInits(mixin: ClassSymbol): List[Tree] = {
+      if mixin.isInlineTrait then return Nil
       val argsIt = superCallsAndArgs.get(mixin) match
         case Some((_, _, args)) => args.iterator
         case _ => Iterator.empty
@@ -306,7 +308,7 @@ class Mixin extends MiniPhase with SymTransformer { thisPhase =>
 
     def setters(mixin: ClassSymbol): List[Tree] =
       val mixinSetters = mixin.info.decls.filter { sym =>
-        sym.isSetter && (!wasOneOf(sym, Deferred) || sym.name.is(TraitSetterName))
+        sym.isSetter && (!wasOneOf(sym, Deferred) || sym.name.is(TraitSetterName)) && !sym.owner.isInlineTrait
       }
       for (setter <- mixinSetters)
       yield transformFollowing(DefDef(mkForwarderSym(setter.asTerm), unitLiteral.withSpan(cls.span)))

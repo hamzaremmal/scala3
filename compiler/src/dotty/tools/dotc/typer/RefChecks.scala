@@ -392,6 +392,8 @@ object RefChecks {
      * of class `clazz` are met.
      */
     def checkOverride(member: Symbol, other: Symbol): Unit =
+      def isInlinedFromInlineTrait = other.owner.isAllOf(InlineTrait) && member.is(Synthetic)
+
       def memberType(self: Type) =
         if (member.isClass) TypeAlias(member.typeRef.etaExpand)
         else self.memberInfo(member)
@@ -477,12 +479,13 @@ object RefChecks {
 
       def overrideTargetNameError() =
         val otherTargetName = i"@targetName(${other.targetName})"
-        if member.hasTargetName(member.name) then
-          overrideError(i"misses a target name annotation $otherTargetName")
-        else if other.hasTargetName(other.name) then
-          overrideError(i"should not have a @targetName annotation since the overridden member hasn't one either")
-        else
-          overrideError(i"has a different target name annotation; it should be $otherTargetName")
+        if !isInlinedFromInlineTrait then
+          if member.hasTargetName(member.name) then
+            overrideError(i"misses a target name annotation $otherTargetName")
+          else if other.hasTargetName(other.name) then
+            overrideError(i"should not have a @targetName annotation since the overridden member hasn't one either")
+          else
+            overrideError(i"has a different target name annotation; it should be $otherTargetName")
 
       //Console.println(infoString(member) + " overrides " + infoString(other) + " in " + clazz);//DEBUG
 
@@ -518,13 +521,13 @@ object RefChecks {
         // direct overrides were already checked on completion (see Checking.chckWellFormed)
         // the test here catches indirect overriddes between two inherited base types.
         overrideError("cannot be used here - class definitions cannot be overridden")
-      else if (other.isOpaqueAlias)
+      else if (other.isOpaqueAlias && !isInlinedFromInlineTrait)
         // direct overrides were already checked on completion (see Checking.chckWellFormed)
         // the test here catches indirect overriddes between two inherited base types.
         overrideError("cannot be used here - opaque type aliases cannot be overridden")
       else if (!other.is(Deferred) && member.isClass)
         overrideError("cannot be used here - classes can only override abstract types")
-      else if other.isEffectivelyFinal then // (1.2)
+      else if (other.isEffectivelyFinal && !isInlinedFromInlineTrait) then // (1.2)
         overrideError(i"cannot override final member ${other.showLocated}")
       else if (member.is(ExtensionMethod) && !other.is(ExtensionMethod)) // (1.3)
         overrideError("is an extension method, cannot override a normal method")
@@ -567,7 +570,7 @@ object RefChecks {
           overrideError("needs `override` modifier")
       else if (other.is(AbsOverride) && other.isIncompleteIn(clazz) && !member.is(AbsOverride))
         overrideError("needs `abstract override` modifiers")
-      else if isMarkedOverride(member) && other.isMutableVarOrAccessor then
+      else if isMarkedOverride(member) && other.isMutableVarOrAccessor && !isInlinedFromInlineTrait then
         overrideError("cannot override a mutable variable")
       else if isMarkedOverride(member)
         && !(member.owner.thisType.baseClasses.exists(_.isSubClass(other.owner)))
