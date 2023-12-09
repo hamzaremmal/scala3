@@ -98,6 +98,13 @@ object language:
     @compileTimeOnly("`relaxedExtensionImports` can only be used at compile time in import statements")
     @deprecated("The experimental.relaxedExtensionImports language import is no longer needed since the feature is now standard", since = "3.4")
     object relaxedExtensionImports
+
+    /** Experimental support for inline traits
+      *
+      * @see [[https://dotty.epfl.ch/docs/reference/experimental/inline-traits]]
+      */
+    @compileTimeOnly("`inlineTraits` can only be used at compile time in import statements")
+    object inlineTraits
   end experimental
 
   /** The deprecated object contains features that are no longer officially suypported in Scala.
