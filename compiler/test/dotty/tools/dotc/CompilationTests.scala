@@ -284,7 +284,7 @@ class CompilationTests {
   // inline-traits tests
   @Test def inlineTraits : Unit = {
     given TestGroup = TestGroup("inline-traits")
-    val options = defaultOptions.andLanguageFeature("inlineTraits")
+    val options = defaultOptions.andLanguageFeature("experimental.inlineTraits")
     compileDir("tests/inline-traits/pos", options).checkCompile()
     compileDir("tests/inline-traits/neg", options).checkExpectedErrors()
   }

@@ -33,6 +33,7 @@ object Feature:
   val pureFunctions = experimental("pureFunctions")
   val captureChecking = experimental("captureChecking")
   val into = experimental("into")
+  val inlineTraits = experimental("inlineTraits")
 
   val globalOnlyImports: Set[TermName] = Set(pureFunctions, captureChecking)
 
@@ -83,6 +84,8 @@ object Feature:
   def genericNumberLiteralsEnabled(using Context) = enabled(genericNumberLiterals)
 
   def scala2ExperimentalMacroEnabled(using Context) = enabled(scala2macros)
+
+  def inlineTraitsEnabled(using Context) = enabled(inlineTraits)
 
   /** Is pureFunctions enabled for this compilation unit? */
   def pureFunsEnabled(using Context) =
