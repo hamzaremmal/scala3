@@ -1,0 +1,8 @@
+-- [E170] Type Error: tests/neg/undefined-type.scala:1:18 --------------------------------------------------------------
+1 |class Foo extends ??? // error
+  |                  ^^^
+  |                  ??? is not a class type
+-- [E170] Type Error: tests/neg/undefined-type.scala:3:19 --------------------------------------------------------------
+3 |object Foo extends ??? // error
+  |                   ^^^
+  |                   ??? is not a class type

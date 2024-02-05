@@ -1,7 +1,27 @@
 package scala.runtime.stdLibPatches
 
+import scala.compiletime.error
+import scala.reflect.ClassTag
+
 object Predef:
   import compiletime.summonFrom
+
+  /**
+   * `???` can be used for marking types that remain to be specified.
+   *
+   * @example {{{
+   * val foo: ??? = ???
+   * var foo: ??? = ???
+   * def foo: ??? = ???
+   *
+   * type MatchType[T] = T match
+   *  case Int => ???
+   *  case _ => ???
+   * }}}
+   *
+   * @group utilities
+   */
+  final opaque type ??? <: Nothing = Nothing
 
   transparent inline def assert(inline assertion: Boolean, inline message: => Any): Unit =
     if !assertion then scala.runtime.Scala3RunTime.assertFailed(message)
