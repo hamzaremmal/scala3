@@ -1,0 +1,27 @@
+-- Error: tests/explicit-nulls/neg/i13764.scala:3:4 --------------------------------------------------------------------
+3 |var ref: AnyRef   = uninitialized // error
+  |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |The usage of method uninitialized is not allow here.
+  |
+  |To fix the issue, either:
+  |1- Disable explicit nulls
+  |2- Add explicitly the Null type to the left hand side of the definition:
+  |   var ref: AnyRef | Null = scala.compiletime.uninitialized
+-- Error: tests/explicit-nulls/neg/i13764.scala:4:4 --------------------------------------------------------------------
+4 |var str: String   = uninitialized // error
+  |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |The usage of method uninitialized is not allow here.
+  |
+  |To fix the issue, either:
+  |1- Disable explicit nulls
+  |2- Add explicitly the Null type to the left hand side of the definition:
+  |   var str: String | Null = scala.compiletime.uninitialized
+-- Error: tests/explicit-nulls/neg/i13764.scala:5:4 --------------------------------------------------------------------
+5 |var arr: Array[?] = uninitialized // error
+  |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |The usage of method uninitialized is not allow here.
+  |
+  |To fix the issue, either:
+  |1- Disable explicit nulls
+  |2- Add explicitly the Null type to the left hand side of the definition:
+  |   var arr: Array[?] | Null = scala.compiletime.uninitialized
