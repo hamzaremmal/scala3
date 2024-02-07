@@ -38,11 +38,10 @@ object ScriptSourceFile {
      *  or it ends with a line starting with "!#" or "::!#", if present.
      */
     val headerLength =
-      if (headerStarts exists (content startsWith _)) {
+      if hasScriptHeader(content) then
         val matcher = headerPattern matcher content.mkString
         if (matcher.find) matcher.end
         else content.indexOf('\n') // end of first line
-      }
       else 0
 
     // overwrite hash-bang lines with all spaces to preserve line numbers
