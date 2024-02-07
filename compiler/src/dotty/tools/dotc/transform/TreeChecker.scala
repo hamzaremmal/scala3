@@ -3,6 +3,7 @@ package dotc
 package transform
 
 import core.Names.Name
+import core.NameOps.*
 import core.DenotTransformers.*
 import core.SymDenotations.*
 import core.Contexts.*
@@ -638,6 +639,48 @@ object TreeChecker {
     override def typedInlined(tree: untpd.Inlined, pt: Type)(using Context): Tree =
       withDefinedSyms(tree.bindings) { super.typedInlined(tree, pt) }
 
+    @annotation.tailrec
+    final def checkStatsOrder(trees: List[untpd.Tree])(using Context): Unit =
+      def isModuleCorrect(mod: Symbol, cls: Symbol): Boolean =
+        mod.is(ModuleVal) && cls.is(ModuleClass) && mod.name == cls.name.stripModuleClassSuffix.toTermName
+      end isModuleCorrect
+
+      def needsModule(cls: untpd.TypeDef): Boolean =
+        cls.symbol.is(CaseClass)
+      end needsModule
+
+      trees match
+        case (cls: untpd.TypeDef) :: (mod: untpd.ValDef) :: (modcls: untpd.TypeDef) :: xs if needsModule(cls) =>
+          // cls needs to have its module right after the tree, otherwise it's a problem
+          if cls.name.toTermName != mod.name || !isModuleCorrect(mod.symbol, modcls.symbol) then
+            report.error(em"""class needs a module but the module is not directly following the class definition in the tree
+                             |
+                             |class       : $cls
+                             |module      : $mod
+                             |module class: $modcls
+                             |""")
+          // All good, we have a class, its module and the module class
+          checkStatsOrder(xs)
+        case (cls: untpd.TypeDef) :: xs if needsModule(cls) =>
+          // Module is missing in the stats but it should be present
+          report.error(em"""class needs a module but it is not followed directly in the tree
+                            |
+                            |class     : $cls
+                            |folloed by: $xs
+                            |""")
+          checkStatsOrder(xs)
+        case (mod: untpd.ValDef) :: (cls: untpd.TypeDef) :: xs if mod.mods.is(ModuleVal) =>
+          if !isModuleCorrect(mod.symbol, cls.symbol) then
+            report.error(em"""module is not complete or the order property of the trees is not respected
+                             |
+                             |module      : $mod
+                             |module class: $cls
+                             |""")
+          checkStatsOrder(xs)
+        case _ :: xs => // Nothing to check, skip it
+          checkStatsOrder(xs)
+        case Nil => ()
+
     /** Check that all defined symbols have legal owners.
      *  An owner is legal if it is either the same as the context's owner
      *  or there's an owner chain of valdefs starting at the context's owner and
@@ -651,6 +694,7 @@ object TreeChecker {
         case _: untpd.Thicket => assert(false, i"unexpanded thicket $tree in statement sequence $trees%\n%")
         case _ =>
       }
+      checkStatsOrder(trees)
       super.typedStats(trees, exprOwner)
     }
 
