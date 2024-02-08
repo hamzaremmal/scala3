@@ -67,14 +67,14 @@ class FirstTransform extends MiniPhase with InfoTransformer { thisPhase =>
     }
 
   /** Reorder statements so that module classes always come after their companion classes */
-  private def reorderAndComplete(stats: List[Tree])(using Context): List[Tree] = {
+  private def reorderAndComplete(stats: List[Tree])(using Context): List[Tree] =
     val moduleClassDefs, singleClassDefs = mutable.Map[Name, Tree]()
 
     /* Returns the result of reordering stats and prepending revPrefix in reverse order to it.
      * The result of reorder is equivalent to reorder(stats, revPrefix) = revPrefix.reverse ::: reorder(stats, Nil).
      * This implementation is tail recursive as long as the element is not a module TypeDef.
      */
-    def reorder(stats: List[Tree], revPrefix: List[Tree]): List[Tree] = stats match {
+    /*def reorder(stats: List[Tree], revPrefix: List[Tree]): List[Tree] = stats match
       case (stat: TypeDef) :: stats1 if stat.symbol.isClass =>
         if (stat.symbol.is(Flags.Module)) {
           def pushOnTop(xs: List[Tree], ys: List[Tree]): List[Tree] =
@@ -97,10 +97,37 @@ class FirstTransform extends MiniPhase with InfoTransformer { thisPhase =>
           )
       case stat :: stats1 => reorder(stats1, stat :: revPrefix)
       case Nil => revPrefix.reverse
-    }
+    end reorder
 
-    reorder(stats, Nil)
-  }
+    reorder(stats, Nil)*/
+
+    def reorder(stats: List[Tree]): List[Tree] =
+      val typedefs = stats.filter(stat => stat.isInstanceOf[TypeDef])
+      val valdefs  = stats.filter(stat => stat.isInstanceOf[ValDef] && stat.symbol.is(ModuleVal) )
+
+      val moduledefs = (typedefs ++ valdefs).groupBy(stat => stat.asInstanceOf[ValDef | TypeDef].name.stripModuleClassSuffix.toTermName)
+
+      val others = stats.filterNot((typedefs ++ valdefs).contains)
+
+      val ordered = for mods <- moduledefs yield
+        //println(s"------- ${mods._1} -------")
+        //println(i"$mods")
+        val cls = mods._2.find(s => s.isInstanceOf[TypeDef] && s.symbol.isClass && !s.symbol.is(ModuleClass))
+        //println(i"$cls")
+        val mod = mods._2.find(s => s.isInstanceOf[ValDef])
+        //println(i"$mod")
+        val modcls = mods._2.find(s => s.isInstanceOf[TypeDef] && s.symbol.is(ModuleClass))
+        //println(i"$modcls")
+        val result = cls.toList ::: mod.toList ::: modcls.toList
+        val others = mods._2.filterNot(result.contains)
+        //println(s"--------------------------")
+        result ::: others
+
+      ordered.flatten.toList ::: others
+    end reorder
+
+    reorder(stats)
+  end reorderAndComplete
 
   /** Eliminate self in Template
    *  Under captureChecking, we keep the self type `S` around in a type definition

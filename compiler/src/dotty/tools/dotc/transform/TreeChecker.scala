@@ -28,6 +28,7 @@ import inlines.Inlines.inInlineMethod
 import dotty.tools.backend.jvm.DottyBackendInterface.symExtensions
 
 import scala.util.control.NonFatal
+import dotty.tools.dotc.quoted.MacroExpansion.context
 
 /** Run by -Ycheck option after a given phase, this class retypes all syntax trees
  *  and verifies that the type of each tree node so obtained conforms to the type found in the tree node.
@@ -639,47 +640,51 @@ object TreeChecker {
     override def typedInlined(tree: untpd.Inlined, pt: Type)(using Context): Tree =
       withDefinedSyms(tree.bindings) { super.typedInlined(tree, pt) }
 
+    /** Compiler invariant: modules are ordered in [[FirstTransform.transformStats]] */
     @annotation.tailrec
-    final def checkStatsOrder(trees: List[untpd.Tree])(using Context): Unit =
+    final def checkStatsOrder(trees: List[tpd.Tree])(using Context): Unit =
       def isModuleCorrect(mod: Symbol, cls: Symbol): Boolean =
         mod.is(ModuleVal) && cls.is(ModuleClass) && mod.name == cls.name.stripModuleClassSuffix.toTermName
       end isModuleCorrect
 
-      def needsModule(cls: untpd.TypeDef): Boolean =
-        cls.symbol.is(CaseClass)
+      def needsModule(cls: Symbol): Boolean =
+        cls.companionModule.exists && !cls.companionModule.is(Synthetic)
       end needsModule
 
-      trees match
-        case (cls: untpd.TypeDef) :: (mod: untpd.ValDef) :: (modcls: untpd.TypeDef) :: xs if needsModule(cls) =>
-          // cls needs to have its module right after the tree, otherwise it's a problem
-          if cls.name.toTermName != mod.name || !isModuleCorrect(mod.symbol, modcls.symbol) then
-            report.error(em"""class needs a module but the module is not directly following the class definition in the tree
-                             |
-                             |class       : $cls
-                             |module      : $mod
-                             |module class: $modcls
-                             |""")
-          // All good, we have a class, its module and the module class
-          checkStatsOrder(xs)
-        case (cls: untpd.TypeDef) :: xs if needsModule(cls) =>
-          // Module is missing in the stats but it should be present
-          report.error(em"""class needs a module but it is not followed directly in the tree
-                            |
-                            |class     : $cls
-                            |folloed by: $xs
-                            |""")
-          checkStatsOrder(xs)
-        case (mod: untpd.ValDef) :: (cls: untpd.TypeDef) :: xs if mod.mods.is(ModuleVal) =>
-          if !isModuleCorrect(mod.symbol, cls.symbol) then
-            report.error(em"""module is not complete or the order property of the trees is not respected
-                             |
-                             |module      : $mod
-                             |module class: $cls
-                             |""")
-          checkStatsOrder(xs)
-        case _ :: xs => // Nothing to check, skip it
-          checkStatsOrder(xs)
-        case Nil => ()
+      if ctx.base.firstTransformPhase <= ctx.phase then
+        trees match
+          case (cls: tpd.TypeDef) :: (mod: tpd.ValDef) :: (modcls: tpd.TypeDef) :: xs if needsModule(cls.symbol) =>
+            // cls needs to have its module right after the tree, otherwise it's a problem
+            if cls.name.toTermName != mod.name || !isModuleCorrect(mod.symbol, modcls.symbol) then
+              report.error(em"""class needs a module but the module is not directly following the class definition in the tree
+                              |
+                              |class       : $cls
+                              |module      : $mod
+                              |module class: $modcls
+                              |""")
+            // All good, we have a class, its module and the module class
+            checkStatsOrder(xs)
+          case (cls: tpd.TypeDef) :: xs if needsModule(cls.symbol) =>
+            // Module is missing in the stats but it should be present
+            println(i"${cls.symbol.companionModule.isDefinedInSource}")
+            report.error(em"""class needs a module but it is not followed directly in the tree
+                              |
+                              |class      : $cls
+                              |followed by: $xs
+                              |""")
+            checkStatsOrder(xs)
+          case (mod: tpd.ValDef) :: (cls: tpd.TypeDef) :: xs if mod.symbol.is(ModuleVal) =>
+            if !isModuleCorrect(mod.symbol, cls.symbol) then
+              report.error(em"""module is not complete or the order property of the trees is not respected
+                              |
+                              |module      : $mod
+                              |module class: $cls
+                              |""")
+            checkStatsOrder(xs)
+          case _ :: xs => // Nothing to check, skip it
+            checkStatsOrder(xs)
+          case Nil => ()
+    end checkStatsOrder
 
     /** Check that all defined symbols have legal owners.
      *  An owner is legal if it is either the same as the context's owner
@@ -694,8 +699,9 @@ object TreeChecker {
         case _: untpd.Thicket => assert(false, i"unexpanded thicket $tree in statement sequence $trees%\n%")
         case _ =>
       }
-      checkStatsOrder(trees)
-      super.typedStats(trees, exprOwner)
+      val typedTrees = super.typedStats(trees, exprOwner)
+      checkStatsOrder(typedTrees._1)
+      typedTrees
     }
 
     override def typedLabeled(tree: untpd.Labeled)(using Context): Labeled = {
