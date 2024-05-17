@@ -221,3 +221,6 @@
 [submodule "community-build/community-projects/shapeless-3"]
 	path = community-build/community-projects/shapeless-3
 	url = https://github.com/dotty-staging/shapeless-3.git
+[submodule "community-build/community-projects/gears"]
+	path = community-build/community-projects/gears
+	url = https://github.com/dotty-staging/gears.git

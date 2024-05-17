@@ -755,6 +755,14 @@ object projects:
     dependencies = List(utest, scalacheck)
   )
 
+  lazy val gears = SbtCommunityProject(
+    project = "gears",
+    sbtTestCommand = "rootJVM/test",
+    sbtPublishCommand = "rootJVM/publishLocal",
+    scalacOptions = Nil,
+    dependencies = Nil
+  )
+
 end projects
 
 def allProjects = List(
@@ -836,6 +844,7 @@ def allProjects = List(
   projects.spire,
   projects.http4s,
   projects.parboiled2,
+  projects.gears
 )
 
 lazy val projectMap = allProjects.groupBy(_.project)
