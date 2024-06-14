@@ -10,6 +10,7 @@ lazy val compilerVersion: String =
   val file = communitybuildDir.resolve("scala3-bootstrapped.version")
   new String(Files.readAllBytes(file), UTF_8)
 
+
 lazy val compilerSupportExperimental: Boolean =
   compilerVersion.contains("SNAPSHOT") || compilerVersion.contains("NIGHTLY")
 
