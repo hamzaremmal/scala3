@@ -487,6 +487,7 @@ object projects:
     dependencies   = List(scalacheck)
   )
 
+
   lazy val scalaCollectionCompat = SbtCommunityProject(
     project        = "scala-collection-compat",
     sbtTestCommand = "compat30/test",
