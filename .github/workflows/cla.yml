@@ -1,7 +1,7 @@
 name: Check Scala CLA
 on:
   pull_request:
-    types: opened
+    types: [opened, synchronize]
     branches-ignore:
       - 'language-reference-stable'
 
