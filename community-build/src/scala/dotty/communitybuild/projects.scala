@@ -10,6 +10,7 @@ lazy val compilerVersion: String =
   val file = communitybuildDir.resolve("scala3-bootstrapped.version")
   new String(Files.readAllBytes(file), UTF_8)
 
+
 lazy val compilerSupportExperimental: Boolean =
   compilerVersion.contains("SNAPSHOT") || compilerVersion.contains("NIGHTLY")
 
@@ -487,6 +488,7 @@ object projects:
     dependencies   = List(scalacheck)
   )
 
+
   lazy val scalaCollectionCompat = SbtCommunityProject(
     project        = "scala-collection-compat",
     sbtTestCommand = "compat30/test",
@@ -755,6 +757,14 @@ object projects:
     dependencies = List(utest, scalacheck)
   )
 
+  lazy val gears = SbtCommunityProject(
+    project = "gears",
+    sbtTestCommand = "rootJVM/test",
+    sbtPublishCommand = "rootJVM/publishLocal",
+    scalacOptions = Nil,
+    dependencies = Nil
+  )
+
 end projects
 
 def allProjects = List(
@@ -836,6 +846,7 @@ def allProjects = List(
   projects.spire,
   projects.http4s,
   projects.parboiled2,
+  projects.gears
 )
 
 lazy val projectMap = allProjects.groupBy(_.project)
