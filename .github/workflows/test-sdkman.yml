@@ -1,0 +1,55 @@
+###################################################################################################
+###                   THIS IS A REUSABLE WORKFLOW TO TEST SCALA WITH SDKMAN!                    ###
+### HOW TO USE:                                                                                 ###
+###   - THIS WORKFLOW RELIES ON THE EXECUTION OF THE .github/workflows/build-sdk.yml            ###
+###   - IT ALSO RELIES ON THE FACT THAT THE WORKFLOW UPLOADS THE LAUNCHERS TO GITHUB ARTIFACTS  ###
+###                                                                                             ###
+### NOTE:                                                                                       ###
+###   - SINCE SCALA 3.5.0, WE DO NOT RELEASE UNIVERSAL LAUNCHERS TO SDKMAN!                     ###
+###################################################################################################
+
+
+name: Test Scala on SDKMAN!
+run-name: Test Scala on SDKMAN!
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        include:
+        - archive : scala3-x86_64-pc-linux.zip
+          runner  : ubuntu-latest
+        # TODO: Uncomment when we have an arm linux machine available
+        #- archive : scala3-aarch64-pc-linux.zip
+        #  runner  : '???'
+        - archive : scala3-x86_64-apple-darwin.zip
+          runner  : macos-13
+        - archive : scala3-aarch64-apple-darwin.zip
+          runner  : macos-latest
+        - archive : scala3-x86_64-pc-win32.zip
+          runner  : windows-latest
+    runs-on: ${{ matrix.runner }}
+    steps:
+      # TODO: WE STILL NEED TO INSTALL SDKMAN...
+      - name: Fetch the archive from GitHub Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+      - name: Unzip the archive
+        run: unzip ${{ matrix.archive }} -d scala-dist
+      - name: Install Scala with SDKMAN!
+        run: sdk install scala local ./scala-dist
+      - name: Switch to the locally installed version
+        run: sdk use scala local
+      # This is the actual test, check that we can run the commands correcty
+      - name: Check the `scala` command
+        run: scala --version
+      - name: Check the `scalac` command
+        run: scalac --version
+      - name: Check the `scaladoc` command
+        run: scaladoc --version
+
+
