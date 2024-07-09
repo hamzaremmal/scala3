@@ -31,6 +31,23 @@ function Scala-FetchScalaVersion {
   }
 }
 
+function Scala-LoadClasspathFromFile {
+  param ( [string] $file )
+  $_CLASS_PATH_RESULT = ""
+  if (Test-Path $file) {
+    foreach ($line in Get-Content $file) {
+      $lib = "$_PROG_HOME/maven2/$line"
+      if (!$_CLASS_PATH_RESULT) {
+        $_CLASS_PATH_RESULT = $lib
+      } else {
+        $_CLASS_PATH_RESULT += "$_PSEP$lib"
+      }
+    }
+  }
+
+  return $_CLASS_PATH_RESULT
+}
+
 
 ###################################################################################################
 ############################################ LOAD JAVA ############################################
