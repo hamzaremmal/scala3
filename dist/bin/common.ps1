@@ -1,52 +1,60 @@
-# #########################################################################
-# ## Code common to scalac.bat, scaladoc.bat and scala.bat
+###################################################################################################
+###                                  POWERSHELL COMMON SCRIPT                                   ###
+###                                                                                             ###
+### Author: Hamza REMMAL <hamza.remmal@epfl.ch>                                                 ###
+### Since : Scala 3.5.0                                                                         ###
+###################################################################################################
 
-if ($env:JAVACMD) {
-  $global:_JAVACMD = $env:JAVACMD
-} elseif ($env:JAVA_HOME) {
-  $global:_JAVACMD = Join-Path $env:JAVA_HOME "bin\java.exe"
-} elseif ($env:JDK_HOME) {
-  $global:_JAVACMD = Join-Path $env:JDK_HOME "bin\java.exe"
-} else {
-  $javaPath = Get-Command java.exe -ErrorAction SilentlyContinue
-  if ($javaPath) {
-      $javaPathDir = Split-Path $javaPath -Parent
-      if ($javaPathDir -notmatch "javapath") {
-          $global:_JAVACMD = Join-Path $javaPathDir "java.exe"
-      }
+
+###################################################################################################
+######################################## UTILITY FUNCTIONS ########################################
+###################################################################################################
+
+function Scala-GetJavaClasspathSeparator {
+  if ($IsWindows) {
+      return ';'
+  } else {
+      return ':'
   }
+}
 
-  if (-not $global:_JAVACMD) {
-      $programFilesJava = Join-Path $env:ProgramFiles "Java"
-      $javaHome = Get-ChildItem -Path $programFilesJava -Directory -Filter "jre*" | Select-Object -First 1
-      if ($javaHome) {
-          $global:_JAVA_HOME = $javaHome.FullName
-      } else {
-          $optPath = "C:\opt"
-          $javaHome = Get-ChildItem -Path $optPath -Directory -Filter "jdk*" | Select-Object -First 1
-          if ($javaHome) {
-              $global:_JAVA_HOME = Join-Path $javaHome.FullName "jre"
+function Scala-FetchScalaVersion {
+  if (Test-Path $_VERSION_FILE) {
+      foreach ($line in Get-Content $_VERSION_FILE) {
+          if ($line.StartsWith("version:=")) {
+              return $line.Substring(9)
           }
       }
-
-      if ($global:_JAVA_HOME) {
-          $global:_JAVACMD = Join-Path $global:_JAVA_HOME "bin\java.exe"
-      }
+      Write-Error "Error: 'VERSION' file does not contain 'version' entry in ($_VERSION_FILE)"
+  } else {
+      Write-Error "Error: 'VERSION' file is missing in ($_VERSION_FILE)"
   }
 }
 
-if (-not (Test-Path $global:_JAVACMD)) {
-  Write-Error "Error: Java executable not found ($global:_JAVACMD)"
-  $global:_EXITCODE = 1
-  exit $global:_EXITCODE
+
+###################################################################################################
+############################################ LOAD JAVA ############################################
+###################################################################################################
+
+$javaPath = Get-Command java -ErrorAction SilentlyContinue
+if ($javaPath) { $_JAVACMD = $javaPath.Source }
+
+if (-not (Test-Path $_JAVACMD)) {
+  Write-Error "Error: Java executable not found ($_JAVACMD)"
+  exit 1
 }
 
-if (-not $global:_PROG_HOME) {
+if (-not $_PROG_HOME) {
   Write-Error "Error: Variable _PROG_HOME undefined"
-  $global:_EXITCODE = 1
-  exit $global:_EXITCODE
+  exit 1
 }
 
-$global:_ETC_DIR = Join-Path $global:_PROG_HOME "etc"
+###################################################################################################
+######################################## VARIOUS VARIABLES ########################################
+###################################################################################################
 
-$global:_PSEP = ";"
+$_ETC_DIR        = Join-Path $_PROG_HOME "etc"
+$_BIN_DIR        = Join-Path $_PROG_HOME "bin"
+$_MVN_REPOSITORY = "file:///$($_PROG_HOME -replace '\\', '/')/maven2"
+$_VERSION_FILE   = Join-Path $_PROG_HOME "VERSION"
+$_PSEP           = Scala-GetJavaClasspathSeparator
