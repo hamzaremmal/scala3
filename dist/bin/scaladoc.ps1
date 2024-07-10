@@ -1,143 +1,132 @@
+###################################################################################################
+###                                 POWERSHELL SCALADOC SCRIPT                                  ###
+###                                                                                             ###
+### Author: Hamza REMMAL <hamza.remmal@epfl.ch>                                                 ###
+### Since : Scala 3.5.0                                                                         ###
+###################################################################################################
+
 # Environment setup
-$global:_EXITCODE = 0
+$_PROG_HOME = $PSScriptRoot.TrimEnd('\bin\')
 
-$scriptPath = $PSScriptRoot
-$global:_PROG_HOME = $scriptPath.TrimEnd('\')
+. "$_PROG_HOME/bin/common.ps1"
 
-. "$_PROG_HOME\bin\common.bat"
-if ($LASTEXITCODE -ne 0) { goto end }
+$_DEFAULT_JAVA_OPTS = "-Xmx768m -Xms768m"
 
-$global:_DEFAULT_JAVA_OPTS = "-Xmx768m -Xms768m"
+###################################################################################################
+############################################ FUNCTIONS ############################################
+###################################################################################################
 
-args $args
+function Scaladoc-ArgumentParsing {
+    param ( [string[]] $params )
 
-# Main
-classpathArgs
+    $_JAVA_DEBUG = ""
+    $_VERBOSE = $false
+    $_QUIET = $false
+    $_COLORS = $false
+    $_SCALA_ARGS = ""
+    $_JAVA_ARGS = ""
+    $_RESIDUAL_ARGS = ""
+    $_IN_SCRIPTING_ARGS = $false
 
-if ($env:JAVA_OPTS) {
-    $global:_JAVA_OPTS = $env:JAVA_OPTS
-} else {
-    $global:_JAVA_OPTS = $global:_DEFAULT_JAVA_OPTS
-}
-
-$global:_JAVACMD = $env:_JAVACMD -replace '%', '%%'
-
-& $_JAVACMD $global:_JAVA_OPTS $env:_JAVA_DEBUG $env:_JAVA_ARGS `
-    -classpath "$env:_CLASS_PATH" `
-    -Dscala.usejavacp=true `
-    dotty.tools.scaladoc.Main $env:_SCALA_ARGS $env:_RESIDUAL_ARGS
-
-if ($LASTEXITCODE -ne 0) {
-    Write-Error "Error: Scaladoc execution failed"
-    $global:_EXITCODE = 1
-    goto end
-}
-goto end
-
-# Subroutines
-
-function args {
-    $global:_JAVA_DEBUG = ""
-    $global:_HELP = $false
-    $global:_VERBOSE = $false
-    $global:_QUIET = $false
-    $global:_COLORS = $false
-    $global:_SCALA_ARGS = ""
-    $global:_JAVA_ARGS = ""
-    $global:_RESIDUAL_ARGS = ""
-    $global:_IN_SCRIPTING_ARGS = $false
-
-    while ($args.Count -gt 0) {
-        $arg = $args[0]
+    while ($params.Count -gt 0) {
+        $arg = $params[0]
         switch ($arg) {
             "--" {
-                $global:_IN_SCRIPTING_ARGS = $true
+                $_IN_SCRIPTING_ARGS = $true
             }
             "-h" {
-                $global:_HELP = $true
-                addScala "-help"
+                $_SCALA_ARGS += " -help"
             }
             "-help" {
-                $global:_HELP = $true
-                addScala "-help"
+                $_SCALA_ARGS += " -help"
             }
             "-v" {
-                $global:_VERBOSE = $true
-                addScala "-verbose"
+                $_VERBOSE = $true
+                $_SCALA_ARGS += " -verbose"
             }
             "-verbose" {
-                $global:_VERBOSE = $true
-                addScala "-verbose"
+                $_VERBOSE = $true
+                $_SCALA_ARGS += " -verbose"
             }
             "-debug" {
-                $global:_JAVA_DEBUG = $global:_DEBUG_STR
+                $_JAVA_DEBUG = $_DEBUG_STR
             }
             "-q" {
-                $global:_QUIET = $true
+                $_QUIET = $true
             }
             "-quiet" {
-                $global:_QUIET = $true
+                $_QUIET = $true
             }
             "-colors" {
-                $global:_COLORS = $true
+                $_COLORS = $true
             }
             "-no-colors" {
-                $global:_COLORS = $false
+                $_COLORS = $false
             }
             default {
                 if ($arg.StartsWith("-D")) {
-                    addJava "$arg"
+                    $_JAVA_ARGS += " $arg"
                 } elseif ($arg.StartsWith("-J")) {
-                    addJava "${arg:2}"
+                    $_JAVA_ARGS += " ${arg:2}"
                 } else {
-                    if ($global:_IN_SCRIPTING_ARGS) {
-                        addScripting "$arg"
+                    if ($_IN_SCRIPTING_ARGS) {
+                        # addScripting "$arg" TODO: What is this ?
                     } else {
-                        addResidual "$arg"
+                        $_RESIDUAL_ARGS += " $arg"
                     }
                 }
             }
         }
-        $args = $args[1..$args.Length]
+        $params = $params[1..$params.Length]
+    }
+
+    return @{
+        JAVA_DEBUG    = $_JAVA_DEBUG
+        SCALA_ARGS    = $_SCALA_ARGS
+        JAVA_ARGS     = $_JAVA_ARGS
+        RESIDUAL_ARGS = $_RESIDUAL_ARGS
     }
 }
 
-function addScala {
-    param ($arg)
-    $global:_SCALA_ARGS += " $arg"
+###################################################################################################
+############################################## SCRIPT #############################################
+###################################################################################################
+
+
+$scaladocParameters = Scaladoc-ArgumentParsing $args
+
+# Main
+$_CLASS_PATH = Scala-LoadClasspathFromFile "$_ETC_DIR/scaladoc.classpath"
+
+if ($JAVA_OPTS) {
+    $_JAVA_OPTS = $JAVA_OPTS
+} else {
+    $_JAVA_OPTS = $_DEFAULT_JAVA_OPTS
 }
 
-function addJava {
-    param ($arg)
-    $global:_JAVA_ARGS += " $arg"
-}
 
-function addResidual {
-    param ($arg)
-    $global:_RESIDUAL_ARGS += " $arg"
-}
+$_JAVA_DEBUG = $scaladocParameters.JAVA_DEBUG
+$_JAVA_ARGS  = $scaladocParameters.JAVA_ARGS
+$_SCALA_ARGS = $scaladocParameters.SCALA_ARGS
+$_RESIDUAL_ARGS = $scaladocParameters.RESIDUAL_ARGS
 
-function classpathArgs {
-    $global:_ETC_DIR = "$global:_PROG_HOME\etc"
-    loadClasspathFromFile
-}
+# Build the java arguments
+$command = @()
+if (-not [string]::IsNullOrEmpty($_JAVA_OPTS)) { $command += $_JAVA_OPTS }
+if (-not [string]::IsNullOrEmpty($_JAVA_DEBUG)) { $command += $_JAVA_DEBUG }
+if (-not [string]::IsNullOrEmpty($_JAVA_ARGS)) { $command += $_JAVA_ARGS }
+$command += "-classpath"
+$command += $_CLASS_PATH
+$command += "-Dscala.usejavacp=true"
+$command += "-Dscala.home=$_PROG_HOME"
+$command += "dotty.tools.scaladoc.Main"
+if (-not [string]::IsNullOrEmpty($_SCALA_ARGS)) { $command += $_SCALA_ARGS }
+if (-not [string]::IsNullOrEmpty($_RESIDUAL_ARGS)) { $command += $_RESIDUAL_ARGS }
 
-function loadClasspathFromFile {
-    $global:_CLASS_PATH = ""
-    $classpathFile = "$global:_ETC_DIR\scaladoc.classpath"
-    if (Test-Path $classpathFile) {
-        $lines = Get-Content $classpathFile
-        foreach ($line in $lines) {
-            $lib = "$global:_PROG_HOME\maven2\$line".Replace('/', '\')
-            if (!$global:_CLASS_PATH) {
-                $global:_CLASS_PATH = $lib
-            } else {
-                $global:_CLASS_PATH += "$env:_PSEP$lib"
-            }
-        }
-    }
-}
+$commandString = $command -join ' '
 
-# Cleanups
-end
-exit $global:_EXITCODE
+Start-Process -FilePath $_JAVACMD -ArgumentList $commandString -NoNewWindow -Wait
+Write-Output $LASTEXITCODE
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+exit 0
