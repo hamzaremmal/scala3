@@ -1,0 +1,63 @@
+###################################################################################################
+###                  THIS IS A REUSABLE WORKFLOW TO BUILD THE SCALA LAUNCHERS                   ###
+### HOW TO USE:                                                                                 ###
+###   - THSI WORKFLOW WILL PACKAGE THE ALL THE LAUNCHERS AND UPLOAD THEM TO GITHUB ARTIFACTS    ###
+###                                                                                             ###
+### NOTE:                                                                                       ###
+###   - SEE THE WORFLOW FOR THE NAMES OF THE ARTIFACTS                                          ###
+###################################################################################################
+
+
+name: Build Scala Launchers
+run-name: Build Scala Launchers
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and pack the SDK (universal)
+        run : ./project/scripts/sbt dist/packArchive
+      - name: Build and pack the SDK (linux x86-64)
+        run : ./project/scripts/sbt dist-linux-x86_64/packArchive
+      - name: Build and pack the SDK (linux aarch64)
+        run : ./project/scripts/sbt dist-linux-aarch64/packArchive
+      - name: Build and pack the SDK (mac x86-64)
+        run : ./project/scripts/sbt dist-mac-x86_64/packArchive
+      - name: Build and pack the SDK (mac aarch64)
+        run : ./project/scripts/sbt dist-mac-aarch64/packArchive
+      - name: Build and pack the SDK (win x86-64)
+        run : ./project/scripts/sbt dist-win-x86_64/packArchive
+      - name: Upload zip archive to GitHub Artifact (universal)
+        uses: actions/upload-artifact@v1
+        with:
+          path: ./dist/target/scala3-*.zip
+          name: scala3.zip
+      - name: Upload zip archive to GitHub Artifact (linux x86-64)
+        uses: actions/upload-artifact@v1
+        with:
+          path: ./dist/linux-x86_64/target/scala3-*-x86_64-pc-linux.zip
+          name: scala3-x86_64-pc-linux.zip
+      - name: Upload zip archive to GitHub Artifact (linux aarch64)
+        uses: actions/upload-artifact@v1
+        with:
+          path: ./dist/linux-aarch64/target/scala3-*-aarch64-pc-linux.zip
+          name: scala3-aarch64-pc-linux.zip
+      - name: Upload zip archive to GitHub Artifact (mac x86-64)
+        uses: actions/upload-artifact@v1
+        with:
+          path: ./dist/mac-x86_64/target/scala3-*-x86_64-apple-darwin.zip
+          name: scala3-x86_64-apple-darwin.zip
+      - name: Upload zip archive to GitHub Artifact (mac aarch64)
+        uses: actions/upload-artifact@v1
+        with:
+          path: ./dist/mac-aarch64/target/scala3-*-aarch64-apple-darwin.zip
+          name: scala3-aarch64-apple-darwin.zip
+      - name: Upload zip archive to GitHub Artifact (win x86-64)
+        uses: actions/upload-artifact@v1
+        with:
+          path: ./dist/win-x86_64/target/scala3-*-x86_64-pc-win32.zip
+          name: scala3-x86_64-pc-win32.zip

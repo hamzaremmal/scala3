@@ -1,0 +1,56 @@
+###################################################################################################
+###                      THIS IS A REUSABLE WORKFLOW TO TEST THE LAUNCHERS                      ###
+### HOW TO USE:                                                                                 ###
+###                                                                                             ###
+### NOTE:                                                                                       ###
+###                                                                                             ###
+###################################################################################################
+
+
+name: Test CLI Launchers on all the platforms
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-sdk.yml
+
+  test:
+    name: Test the "${{ matrix.package }}" release on (${{ matrix.os }})
+    needs: build
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            package: [ scala3.zip, scala3-x86_64-pc-linux.zip ]
+          #- os: linux-arm64
+          #  package: [ scala3.zip, scala3-aarch64-pc-linux.zip ]
+          - os: macos-13
+            package: [ scala3.zip, scala3-x86_64-apple-darwin.zip ]
+          - os: macos-latest
+            package: [ scala3.zip, scala3-aarch64-apple-darwin.zip ]
+          - os: windows-latest
+            package: [ scala3.zip, scala3-x86_64-pc-win32.zip ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses : actions/checkout@v4
+      - name : Download the ${{ matrix.package }} package from Github Artifacts
+        uses : actions/download-artifact@v4
+        with :
+          name : ${{ matrix.package }}
+      - name : Configure the ${{ matrix.package }} release package
+        run  : |
+          unzip ${{ matrix.package }} -d scala3
+          "CI_SCALA_HOME=${{ github.workspace }}/scala3" >> $GITHUB_ENV
+      - name : Test the CLI commands on Powershell
+        run  : ./tests/launchers/powershell-test.ps1
+        shell: pwsh
+      - name : Test the CLI commands on Bash
+        run  : ./tests/launchers/bash-test.sh
+        shell: bash
+      - name : Test the CLI commands on Batch
+        run  : ./tests/launchers/batch-test.bat
+        shell: cmd
+        if   : ${{ matrix.os }} == 'windows-latest'
