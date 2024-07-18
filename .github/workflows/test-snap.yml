@@ -1,0 +1,44 @@
+###################################################################################################
+###                     THIS IS A REUSABLE WORKFLOW TO TEST SCALA WITH SNAP                     ###
+### HOW TO USE:                                                                                 ###
+###                                                                                             ###
+### NOTE:                                                                                       ###
+###                                                                                             ###
+###################################################################################################
+
+name: Test 'scala' Snap Package
+run-name: Test 'scala' (${{ inputs.version }}) Snap Package
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+      java-version:
+        required: true
+        type    : string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ inputs.java-version }}
+      - name: Download the 'snap' from GitHub Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: scala.snap
+      - name : Install the `scala` package with Snap
+        run  : sudo snap install scala.snap --dangerous
+      - name : Test the `scala` command
+        run  : scala --version
+      - name : Test the `scalac` command
+        run  : scalac --version
+      - name : Test the `scaladoc` command
+        run  : scaladoc --version
+      - name : Uninstall the `scala` package
+        run  : choco uninstall scala
+        

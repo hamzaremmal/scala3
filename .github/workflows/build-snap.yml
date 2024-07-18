@@ -1,0 +1,50 @@
+###################################################################################################
+###                    THIS IS A REUSABLE WORKFLOW TO BUILD SCALA WITH SNAP                     ###
+### HOW TO USE:                                                                                 ###
+###                                                                                             ###
+### NOTE:                                                                                       ###
+###                                                                                             ###
+###################################################################################################
+
+
+name: Build 'scala' Snap Package
+run-name: Build 'scala' (${{ inputs.version }}) Snap Package
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type    : string
+      url:
+        required: true
+        type    : string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Snapcraft
+        uses: samuelmeuli/action-snapcraft@v2
+      - name: Replace the version placeholder
+        uses: richardrigutins/replace-in-files@v2
+        with:
+          files: ./pkgs/snap/snapcraft.yaml
+          search-text: '@VERSION@'
+          replacement-text: ${{ inputs.version }}
+      - name: Replace the URL placeholder
+        uses: richardrigutins/replace-in-files@v2
+        with:
+          files: ./pkgs/snap/snapcraft.yaml
+          search-text: '@URL@'
+          replacement-text: ${{ inputs.url }}
+      - name: Build the Snap package (.snap)
+        run : snapcraft
+        working-directory: ./pkgs/snap
+      - name: Upload the Chocolatey package to GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: scala.snap
+          path: ./pkgs/snap/*.snap
+          if-no-files-found: error
