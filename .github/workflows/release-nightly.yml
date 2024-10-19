@@ -44,6 +44,12 @@ jobs:
     secrets:
       develocity-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
 
+  test-scala2-tasty:
+    name: Test bootstrapped projects with Scala 2 TASTy
+    uses: ./.github/workflows/test-scala2-library-tasty.yml
+    secrets:
+      develocity-key: ${{ secrets.DEVELOCITY_ACCESS_KEY }}
+
   publish:
     runs-on: [self-hosted, Linux]
     container:
@@ -56,7 +62,7 @@ jobs:
     strategy:
       matrix:
         branch: [main, lts-3.3]
-    needs: [test-non-bootstrapped, test-bootstrapped, MiMa, community-build, test-sbt]
+    needs: [test-non-bootstrapped, test-bootstrapped, MiMa, community-build, test-sbt, test-scala2-tasty]
     if: github.repository == 'scala/scala3'
     env:
       PGP_PW: ${{ secrets.PGP_PW }}  # PGP passphrase
