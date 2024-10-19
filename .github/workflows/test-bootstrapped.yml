@@ -1,0 +1,69 @@
+###################################################################################################
+###                THIS IS A REUSABLE WORKFLOW TO TEST THE BOOTSTRAPPED PROJECTS                ###
+### HOW TO USE:                                                                                 ###
+###   - ???                                                                                     ###
+###                                                                                             ###
+### NOTE:                                                                                       ###
+###   - ???                                                                                     ###
+###################################################################################################
+
+name: Test bootsrapped projects
+run-name: Test bootsrapped projects
+
+on:
+  workflow_call:
+    secrets:
+      develocity-key:
+        required: true
+
+env:
+  DOTTY_CI_RUN: true
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.develocity-key }}
+
+jobs:
+  test:
+    runs-on: [self-hosted, Linux]
+    container:
+      image: lampepfl/dotty:2024-10-18
+      options: --cpu-shares 4096
+      volumes:
+        - ${{ github.workspace }}/../../cache/sbt:/root/.sbt
+        - ${{ github.workspace }}/../../cache/ivy:/root/.ivy2/cache
+        - ${{ github.workspace }}/../../cache/general:/root/.cache
+    steps:
+      - name: Set JDK 17 as default
+        run: echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
+
+      - name: Reset existing repo
+        run: |
+          git config --global --add safe.directory /__w/scala3/scala3
+          git -c "http.https://github.com/.extraheader=" fetch --recurse-submodules=no "https://github.com/scala/scala3" && git reset --hard FETCH_HEAD || true
+
+      - name: Checkout cleanup script
+        uses: actions/checkout@v4
+
+      - name: Cleanup
+        run: .github/workflows/cleanup.sh
+
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Add SBT proxy repositories
+        run: cp -vf .github/workflows/repositories /root/.sbt/ ; true
+
+      - name: Cmd Tests
+        run: |
+          ./project/scripts/buildScalaBinary
+          ./project/scripts/sbt ";scala3-bootstrapped/compile ;scala3-bootstrapped/test ;sbt-test/scripted scala2-compat/* ;scala3-compiler-bootstrapped/scala3CompilerCoursierTest:test"
+          ./project/scripts/cmdTests
+          ./project/scripts/bootstrappedOnlyCmdTests
+
+      - name: Scala.js Test
+        run: |
+          ./project/scripts/sbt ";sjsSandbox/run ;sjsSandbox/test ;sjsJUnitTests/test ;set sjsJUnitTests/scalaJSLinkerConfig ~= switchToESModules ;sjsJUnitTests/test ;sjsCompilerTests/test"
+
+      - name: Test with Scala 2 library TASTy (fast)
+        run: ./project/scripts/sbt ";set ThisBuild/Build.scala2Library := Build.Scala2LibraryTasty ;scala3-bootstrapped/testCompilation i5; scala3-bootstrapped/testCompilation tests/run/typelevel-peano.scala; scala3-bootstrapped/testOnly dotty.tools.backend.jvm.DottyBytecodeTests" # only test a subset of test to avoid doubling the CI execution time
+
+      - name: Test with Scala 2 library with CC TASTy (fast)
+        run: ./project/scripts/sbt ";set ThisBuild/Build.scala2Library := Build.Scala2LibraryCCTasty; scala2-library-cc/compile; scala2-library-cc-tasty/compile; scala3-bootstrapped/testCompilation i3"
