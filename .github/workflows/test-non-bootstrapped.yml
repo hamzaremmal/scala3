@@ -1,0 +1,63 @@
+###################################################################################################
+###              THIS IS A REUSABLE WORKFLOW TO TEST THE NON-BOOTSTRAPPED PROJECTS              ###
+### HOW TO USE:                                                                                 ###
+###   - ???                                                                                     ###
+###                                                                                             ###
+### NOTE:                                                                                       ###
+###   - ???                                                                                     ###
+###################################################################################################
+
+name: Test non-bootsrapped projects
+run-name: Test non-bootsrapped projects
+
+on:
+  workflow_call:
+    secrets:
+      develocity-key:
+        required: true
+
+env:
+  DOTTY_CI_RUN: true
+  DEVELOCITY_ACCESS_KEY: ${{ secrets.develocity-key }}
+
+jobs:
+  test:
+    runs-on: [self-hosted, Linux]
+    container:
+      image: lampepfl/dotty:2024-10-18
+      options: --cpu-shares 4096
+      volumes:
+        - ${{ github.workspace }}/../../cache/sbt:/root/.sbt
+        - ${{ github.workspace }}/../../cache/ivy:/root/.ivy2/cache
+        - ${{ github.workspace }}/../../cache/general:/root/.cache
+    steps:
+      - name: Set JDK 17 as default
+        run: echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
+
+      ## Workaround for https://github.com/actions/runner/issues/2033 (See https://github.com/scala/scala3/pull/19720)
+      - name: Reset existing repo
+        run: |
+          git config --global --add safe.directory /__w/scala3/scala3
+          git -c "http.https://github.com/.extraheader=" fetch --recurse-submodules=no "https://github.com/scala/scala3" && git reset --hard FETCH_HEAD || true
+
+      - name: Checkout cleanup script
+        uses: actions/checkout@v4
+
+      - name: Cleanup
+        run: .github/workflows/cleanup.sh
+
+      - name: Git Checkout
+        uses: actions/checkout@v4
+
+      - name: Add SBT proxy repositories
+        run: cp -vf .github/workflows/repositories /root/.sbt/ ; true
+
+      - name: Test
+        # DON'T add dist/Universal/stage!
+        # Adding dist/Universal/stage bootstraps the compiler
+        # which undermines the point of these tests:
+        # to quickly run the tests without the cost of bootstrapping
+        # and also to run tests when the compiler doesn't bootstrap
+        run: |
+          ./project/scripts/sbt ";compile ;test"
+          ./project/scripts/cmdTests
