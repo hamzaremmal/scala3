@@ -42,6 +42,7 @@ import cc.{isCaptureChecking, isRetainsLike}
 import collection.mutable
 import reporting.*
 import Annotations.ExperimentalAnnotation
+import dotty.tools.dotc.printing.Formatting.hl
 
 object Checking {
   import tpd.*
@@ -768,6 +769,30 @@ object Checking {
     }
   }
 
+  def checkInlineTrait(sym: Symbol, stats: List[Tree])(using Context): Unit =
+    def checkInlineTraitMember(stat: Tree) = stat match
+      case _: TypeDef if stat.symbol.isClass =>
+        report.error(em"support for inner classes is not implemented yet", stat)
+      case _: TypeDef =>
+        report.error(em"support for type aliases and type bounds is not implemented yet", stat)
+      case _: ValDef if stat.symbol.is(Module) =>
+        report.error(em"Support for ${hl("object")} definitions is not yet implemented for inline traits", stat)
+      case _: ValDef =>
+        report.error(em"support for fields is not implemented yet", stat)
+      case _: DefDef =>
+        report.error(em"support for methods is not implemented yet", stat)
+      case _: Import =>
+        report.error(em"Support for ${hl("import")} statements is not yet implemented for inline traits", stat)
+      case _: Export =>
+        report.error(em"Support for ${hl("export")} statements is not yet implemented for inline traits", stat)
+      case _ =>
+        report.error(em"Support for initialization code is not implemented yet in inline traits", stat)
+    end checkInlineTraitMember
+    
+    if sym.isInlineTrait then
+      for stat <- stats do checkInlineTraitMember(stat)
+  end checkInlineTrait
+
   /** Check the inline override methods only use inline parameters if they override an inline parameter. */
   def checkInlineOverrideParameters(sym: Symbol)(using Context): Unit =
     lazy val params = sym.paramSymss.flatten
@@ -1293,6 +1318,9 @@ trait Checking {
   /** Verify classes extending AnyVal meet the requirements */
   def checkDerivedValueClass(clazz: Symbol, stats: List[Tree])(using Context): Unit =
     Checking.checkDerivedValueClass(clazz, stats)
+
+  def checkInlineTrait(sym: Symbol, stats: List[Tree])(using Context): Unit = 
+    Checking.checkInlineTrait(sym, stats)
 
   /** Check that case classes are not inherited by case classes.
    */

@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-type-in-inline-trait.scala:2:9 -----------------------------------------------
+2 |    type Bar // error
+  |    ^^^^^^^^
+  |    support for type aliases and type bounds is not implemented yet

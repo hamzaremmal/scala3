@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-export-in-inline-trait.scala:2:11 --------------------------------------------
+2 |    export Predef.* // error
+  |    ^^^^^^^^^^^^^^^
+  |    Support for export statements is not yet implemented for inline traits

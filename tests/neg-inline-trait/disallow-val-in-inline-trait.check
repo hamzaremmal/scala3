@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-val-in-inline-trait.scala:2:8 ------------------------------------------------
+2 |    val foo: Any // error
+  |    ^^^^^^^^^^^^
+  |    support for fields is not implemented yet

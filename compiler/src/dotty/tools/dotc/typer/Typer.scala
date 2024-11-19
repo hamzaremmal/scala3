@@ -3183,9 +3183,8 @@ class Typer(@constructorOnly nestingLevel: Int = 0) extends Namer
       }
 
       checkNonCyclicInherited(cls.thisType, cls.info.parents, cls.info.decls, cdef.srcPos)
-
-      // check value class constraints
       checkDerivedValueClass(cls, body1)
+      checkInlineTrait(cls, body1)
 
       val effectiveOwner = cls.owner.skipWeakOwner
       if cls.is(ModuleClass)

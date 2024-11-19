@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-lazyval-in-inline-trait.scala:2:13 -------------------------------------------
+2 |    lazy val foo: Any // error
+  |    ^^^^^^^^^^^^^^^^^
+  |    support for fields is not implemented yet

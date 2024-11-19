@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-import-in-inline-trait.scala:2:11 --------------------------------------------
+2 |    import scala.collection // error
+  |    ^^^^^^^^^^^^^^^^^^^^^^^
+  |    Support for import statements is not yet implemented for inline traits

@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-def-in-inline-trait.scala:2:8 ------------------------------------------------
+2 |    def foo: Any // error
+  |    ^^^^^^^^^^^^
+  |    support for methods is not implemented yet

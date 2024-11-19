@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-class-in-inline-trait.scala:2:10 ---------------------------------------------
+2 |    class Bar // error
+  |    ^^^^^^^^^
+  |    support for inner classes is not implemented yet

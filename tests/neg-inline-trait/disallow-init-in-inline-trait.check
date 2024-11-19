@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-init-in-inline-trait.scala:2:11 ----------------------------------------------
+2 |    println("Hello world!") // error
+  |    ^^^^^^^^^^^^^^^^^^^^^^^
+  |    Support for initialization code is not implemented yet in inline traits

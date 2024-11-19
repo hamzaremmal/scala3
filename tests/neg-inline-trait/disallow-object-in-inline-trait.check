@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-object-in-inline-trait.scala:2:4 ---------------------------------------------
+2 |    object Bar // error
+  |    ^
+  |    Support for object definitions is not yet implemented for inline traits
