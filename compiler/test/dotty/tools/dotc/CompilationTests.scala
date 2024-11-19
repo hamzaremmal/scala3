@@ -293,6 +293,23 @@ class CompilationTests {
     ).checkRuns()
 
   }
+
+  // ==============================================================================================
+  // ================================== INLINE TRAIT TESTING ======================================
+  // ==============================================================================================
+
+  @Test
+  def posInlineTrait: Unit =
+    given TestGroup = TestGroup("pos-inline-trait")
+    compileFilesInDir("tests/pos-inline-trait", defaultOptions).checkCompile()
+  end posInlineTrait
+
+  @Test
+  def negInlineTrait: Unit =
+    given TestGroup = TestGroup("neg-inline-trait")
+    compileFilesInDir("tests/neg-inline-trait", defaultOptions).checkExpectedErrors()
+  end negInlineTrait
+
 }
 
 object CompilationTests extends ParallelTesting {
