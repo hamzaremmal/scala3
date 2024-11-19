@@ -1,4 +1,12 @@
--- Error: tests/neg-inline-trait/disallow-inline-trait-inheritance.scala:3:13 ------------------------------------------
-3 |inline trait Bar extends Foo // error
+-- Error: tests/neg-inline-trait/disallow-inline-trait-inheritance.scala:5:13 ------------------------------------------
+5 |inline trait Bar1 extends Foo1 // error
   |             ^
-  |             inline trait Bar may not inherit from trait Foo
+  |             inline trait Bar1 may not inherit from trait Foo1
+-- Error: tests/neg-inline-trait/disallow-inline-trait-inheritance.scala:6:13 ------------------------------------------
+6 |inline trait Bar2 extends Foo2 // error
+  |             ^
+  |             inline trait Bar2 may not inherit from trait Foo2
+-- Error: tests/neg-inline-trait/disallow-inline-trait-inheritance.scala:7:13 ------------------------------------------
+7 |inline trait Bar3 extends Foo3 // error
+  |             ^
+  |             inline trait Bar3 can only inherit from AnyRef - [class Foo3]
