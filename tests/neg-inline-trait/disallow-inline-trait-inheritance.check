@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-inline-trait-inheritance.scala:3:13 ------------------------------------------
+3 |inline trait Bar extends Foo // error
+  |             ^
+  |             inline trait Bar may not inherit from trait Foo
