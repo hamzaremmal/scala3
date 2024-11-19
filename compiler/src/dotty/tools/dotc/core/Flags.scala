@@ -449,13 +449,13 @@ object Flags {
 
   /** Flags representing source modifiers */
   private val CommonSourceModifierFlags: FlagSet =
-    commonFlags(Private, Protected, Final, Case, Implicit, Given, Override, JavaStatic, Transparent, Erased)
+    commonFlags(Private, Protected, Final, Case, Implicit, Given, Override, JavaStatic, Transparent, Erased, Inline)
 
   val TypeSourceModifierFlags: FlagSet =
     CommonSourceModifierFlags.toTypeFlags | Abstract | Sealed | Opaque | Open
 
   val TermSourceModifierFlags: FlagSet =
-    CommonSourceModifierFlags.toTermFlags | Inline | AbsOverride | Lazy | Tracked
+    CommonSourceModifierFlags.toTermFlags | AbsOverride | Lazy | Tracked
 
   /** Flags representing modifiers that can appear in trees */
   val ModifierFlags: FlagSet =
@@ -586,6 +586,7 @@ object Flags {
   val GivenMethod: FlagSet                   = Given | Method
   val LazyGiven: FlagSet                     = Given | Lazy
   val InlineOrProxy: FlagSet                 = Inline | InlineProxy                           // An inline method or inline argument proxy */
+  val InlineTrait: FlagSet                   = Inline | Trait
   val InlineMethod: FlagSet                  = Inline | Method
   val InlineImplicitMethod: FlagSet          = Implicit | InlineMethod
   val InlineParam: FlagSet                   = Inline | Param
