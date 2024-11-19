@@ -790,6 +790,8 @@ object Checking {
     end checkInlineTraitMember
     
     if sym.isInlineTrait then
+      if sym.isUniversalTrait then
+        report.error(em"inline $sym may not be a universal trait", sym.srcPos)
       for stat <- stats do checkInlineTraitMember(stat)
   end checkInlineTrait
 

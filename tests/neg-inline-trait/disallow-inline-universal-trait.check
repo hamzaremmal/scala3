@@ -1,0 +1,4 @@
+-- Error: tests/neg-inline-trait/disallow-inline-universal-trait.scala:1:13 --------------------------------------------
+1 |inline trait Foo extends Any // error
+  |             ^
+  |             inline trait Foo may not be a universal trait

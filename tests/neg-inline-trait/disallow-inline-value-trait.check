@@ -1,0 +1,6 @@
+-- [E068] Syntax Error: tests/neg-inline-trait/disallow-inline-value-trait.scala:1:13 ----------------------------------
+1 |inline trait Foo extends AnyVal // error: cannot extend AnyVal
+  |             ^
+  |             trait Foo cannot extend AnyVal
+  |
+  | longer explanation available when compiling with `-explain`
