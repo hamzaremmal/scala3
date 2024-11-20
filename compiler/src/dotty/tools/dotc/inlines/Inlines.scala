@@ -6,6 +6,7 @@ import ast.*, core.*
 import Flags.*, Symbols.*, Types.*, Decorators.*, Constants.*, Contexts.*
 import StdNames.{tpnme, nme}
 import NameOps.*
+import InlineTraits.*
 import typer.*
 import NameKinds.BodyRetainerName
 import SymDenotations.SymDenotation
@@ -29,19 +30,13 @@ object Inlines:
    */
   private[dotc] class MissingInlineInfo extends Exception
 
-  /** `sym` is an inline method with a known body to inline.
-   */
-  def hasBodyToInline(sym: SymDenotation)(using Context): Boolean =
-    sym.isInlineMethod && sym.hasAnnotation(defn.BodyAnnot)
-
   /** The body to inline for method `sym`, or `EmptyTree` if none exists.
    *  @pre  hasBodyToInline(sym)
    */
   def bodyToInline(sym: SymDenotation)(using Context): Tree =
-    if hasBodyToInline(sym) then
-      sym.getAnnotation(defn.BodyAnnot).get.tree
-    else
-      EmptyTree
+    sym.getAnnotation(defn.BodyAnnot)
+       .map(_.tree)
+       .getOrElse(EmptyTree)
 
   /** Are we in an inline method body? */
   def inInlineMethod(using Context): Boolean =
@@ -49,7 +44,9 @@ object Inlines:
 
   /** Can a call to method `meth` be inlined? */
   def isInlineable(meth: Symbol)(using Context): Boolean =
-    meth.is(Inline) && meth.hasAnnotation(defn.BodyAnnot) && !inInlineMethod
+    (meth.is(Inline) || meth.isSythesisedCallToInlineTraitMember)
+    && meth.hasAnnotation(defn.BodyAnnot) 
+    && !inInlineMethod
 
   /** Should call be inlined in this context? */
   def needsInlining(tree: Tree)(using Context): Boolean = tree match {

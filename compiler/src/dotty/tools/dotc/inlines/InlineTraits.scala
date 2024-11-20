@@ -23,7 +23,23 @@ object InlineTraits:
         sym.isAllOf(Synthetic | Override) 
         && sym.nextOverriddenSymbol.isInlinableMemberInInlineTrait
       end isSynthesisedFromInlineTrait
+
+      /** Is the symbol a call of the form `super[T].member` (See: `inlinedDefDefForDecl`) */
+      def isSythesisedCallToInlineTraitMember(using Context): Boolean =
+        sym.isInlinableMemberInInlineTrait && ctx.owner.is(Synthetic)
   end extension
+
+  // ==============================================================================================
+  // ===================================== PREPARE INLINING =======================================
+  // ==============================================================================================
+
+  def registerInlineTraitInfo(stats: List[Tree])(using Context): Unit =
+    for stat <- stats do
+      stat match
+        case stat: DefDef if !stat.symbol.is(Inline) && !stat.symbol.is(Deferred) =>
+          PrepareInlineable.registerInlineInfo(stat.symbol, stat.rhs)
+        case _ =>
+  end registerInlineTraitInfo
 
   // ==============================================================================================
   // ==================================== SYMBOL MANIPULATION =====================================

@@ -29,7 +29,7 @@ import Inferencing.*
 import Dynamic.isDynamicExpansion
 import EtaExpansion.etaExpand
 import TypeComparer.CompareResult
-import inlines.{Inlines, PrepareInlineable}
+import inlines.{Inlines, InlineTraits, PrepareInlineable}
 import util.Spans.*
 import util.common.*
 import util.{Property, SimpleIdentityMap, SrcPos}
@@ -3184,7 +3184,10 @@ class Typer(@constructorOnly nestingLevel: Int = 0) extends Namer
 
       checkNonCyclicInherited(cls.thisType, cls.info.parents, cls.info.decls, cdef.srcPos)
       checkDerivedValueClass(cls, body1)
-      checkInlineTrait(cls, body1)
+      if cls.isInlineTrait then
+        checkInlineTrait(cls, body1)
+        InlineTraits.registerInlineTraitInfo(body1)
+      end if
 
       val effectiveOwner = cls.owner.skipWeakOwner
       if cls.is(ModuleClass)
