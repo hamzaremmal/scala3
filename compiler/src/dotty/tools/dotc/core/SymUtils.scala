@@ -79,6 +79,10 @@ class SymUtils:
       self.is(Enum, butNot = Case) &&
       self.info.parents.exists(p => p.typeSymbol == defn.JavaEnumClass)
 
+    /** Does the symbol representation inherits **directly** an inline trait */
+    def derivesFromInlineTrait(using Context): Boolean =
+      self.info.parents.exists(s => s.typeSymbol.isInlineTrait)
+
     def isDerivedValueClass(using Context): Boolean = self.isClass && {
       val d = self.denot
       !d.isRefinementClass &&

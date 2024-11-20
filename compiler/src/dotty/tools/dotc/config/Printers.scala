@@ -46,6 +46,7 @@ object Printers {
   val inlining = noPrinter
   val interactiv = noPrinter
   val macroAnnot = noPrinter
+  val inlineTraits = new Printer
   val matchTypes = noPrinter
   val nullables = noPrinter
   val overload = noPrinter

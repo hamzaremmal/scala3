@@ -779,12 +779,12 @@ object Checking {
         report.error(em"Support for ${hl("object")} definitions is not yet implemented for inline traits", stat)
       case _: ValDef =>
         report.error(em"support for fields is not implemented yet", stat)
-      case _: DefDef =>
-        report.error(em"support for methods is not implemented yet", stat)
       case _: Import =>
         report.error(em"Support for ${hl("import")} statements is not yet implemented for inline traits", stat)
       case _: Export =>
         report.error(em"Support for ${hl("export")} statements is not yet implemented for inline traits", stat)
+      case _: DefDef =>
+        // OK
       case _ =>
         report.error(em"Support for initialization code is not implemented yet in inline traits", stat)
     end checkInlineTraitMember
