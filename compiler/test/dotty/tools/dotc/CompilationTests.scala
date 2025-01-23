@@ -82,6 +82,7 @@ class CompilationTests {
       compileFile("tests/rewrites/infix-named-args.scala", defaultOptions.and("-rewrite", "-source:3.6-migration")),
       compileFile("tests/rewrites/ambigious-named-tuple-assignment.scala", defaultOptions.and("-rewrite", "-source:3.6-migration")),
       compileFile("tests/rewrites/i21382.scala", defaultOptions.and("-indent", "-rewrite")),
+      compileFile("tests/rewrites/i22440.scala", defaultOptions.and("-rewrite"))
     ).checkRewrites()
   }
 
