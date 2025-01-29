@@ -4,79 +4,31 @@ import com.typesafe.tools.mima.core._
 object Scala2LibraryBootstrappedMiMaFilters {
 
   val BackwardsBreakingChanges: Map[String, Seq[ProblemFilter]] = Map(
-    Build.stdlibBootstrappedVersion -> {
-      Seq(
-        // Files that are not compiled in the bootstrapped library
-        ProblemFilters.exclude[MissingClassProblem]("scala.AnyVal"),
+    Build.stdlibBootstrappedVersion -> Seq(
+      // Scala language features (not really a problem)
+      ProblemFilters.exclude[DirectMissingMethodProblem]("scala.language.<clinit>"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("scala.language#experimental.<clinit>"),
+      ProblemFilters.exclude[DirectMissingMethodProblem]("scala.util.Properties.<clinit>"),
 
-        // Scala language features
-        ProblemFilters.exclude[DirectMissingMethodProblem]("scala.language.<clinit>"),
-        ProblemFilters.exclude[DirectMissingMethodProblem]("scala.language#experimental.<clinit>"),
-        ProblemFilters.exclude[FinalClassProblem]("scala.language$experimental$"),
-        ProblemFilters.exclude[FinalClassProblem]("scala.languageFeature$*$"),
+      // Companion module class (not really a problem)
+      ProblemFilters.exclude[FinalClassProblem]("scala.*$"),
+      ProblemFilters.exclude[FinalMethodProblem]("scala.io.Source.NoPositioner"),
+      ProblemFilters.exclude[FinalMethodProblem]("scala.io.Source.RelaxedPosition"),
+      ProblemFilters.exclude[FinalMethodProblem]("scala.io.Source.RelaxedPositioner"),
+      ProblemFilters.exclude[FinalMethodProblem]("scala.Enumeration.ValueOrdering"),
+      ProblemFilters.exclude[FinalMethodProblem]("scala.Enumeration.ValueSet"),
+      ProblemFilters.exclude[FinalMethodProblem]("scala.StringContext.s"),
 
-        // Value class extension methods
-        ProblemFilters.exclude[DirectMissingMethodProblem]("scala.*$extension"),
-
-        // Companion module class
-        ProblemFilters.exclude[FinalClassProblem]("scala.*$"),
-
-        // Scala 2 intrinsic macros
-        ProblemFilters.exclude[FinalMethodProblem]("scala.StringContext.s"),
-
-        // Specialization?
-        ProblemFilters.exclude[MissingFieldProblem]("scala.Tuple1._1"), // field _1 in class scala.Tuple1 does not have a correspondent in current version
-        ProblemFilters.exclude[MissingFieldProblem]("scala.Tuple2._1"), // field _1 in class scala.Tuple2 does not have a correspondent in current version
-        ProblemFilters.exclude[MissingFieldProblem]("scala.Tuple2._2"), // field _2 in class scala.Tuple2 does not have a correspondent in current version
-
-        // Scala 2 specialization
-        ProblemFilters.exclude[MissingClassProblem]("scala.*$sp"),
-        ProblemFilters.exclude[DirectMissingMethodProblem]("scala.*$sp"),
-        ProblemFilters.exclude[DirectMissingMethodProblem]("scala.*#*#sp.$init$"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.collection.DoubleStepper"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.collection.immutable.DoubleVectorStepper"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.collection.immutable.IntVectorStepper"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.collection.immutable.LongVectorStepper"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.collection.IntStepper"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.collection.LongStepper"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.jdk.DoubleAccumulator"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.jdk.FunctionWrappers$*"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.jdk.IntAccumulator"),
-        ProblemFilters.exclude[MissingTypesProblem]("scala.jdk.LongAccumulator"),
-        ProblemFilters.exclude[FinalClassProblem]("scala.collection.ArrayOps$ReverseIterator"),
-        ProblemFilters.exclude[FinalClassProblem]("scala.Tuple1"),
-        ProblemFilters.exclude[FinalClassProblem]("scala.Tuple2"),
-
-        // other
-        ProblemFilters.exclude[FinalMethodProblem]("scala.Enumeration.ValueOrdering"),
-        ProblemFilters.exclude[FinalMethodProblem]("scala.Enumeration.ValueSet"),
-        ProblemFilters.exclude[FinalMethodProblem]("scala.io.Source.NoPositioner"),
-        ProblemFilters.exclude[FinalMethodProblem]("scala.io.Source.RelaxedPosition"),
-        ProblemFilters.exclude[FinalMethodProblem]("scala.io.Source.RelaxedPositioner"),
-        ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.immutable.SortedMapOps.coll"),
-        ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.immutable.TreeMap.empty"),
-        ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.immutable.TreeMap.fromSpecific"),
-        ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.mutable.ArrayBuilder#ofUnit.addAll"),
-        ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.mutable.TreeMap.empty"),
-        ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.mutable.TreeMap.fromSpecific"),
-        ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.reflect.ManifestFactory#NothingManifest.newArray"),
-        ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.reflect.ManifestFactory#NullManifest.newArray"),
-        ProblemFilters.exclude[MissingFieldProblem]("scala.collection.ArrayOps#ReverseIterator.xs"),
-        ProblemFilters.exclude[MissingFieldProblem]("scala.runtime.NonLocalReturnControl.value"),
-        ProblemFilters.exclude[ReversedMissingMethodProblem]("scala.collection.immutable.SortedMapOps.coll"),
-      ) ++
-      Seq( // DirectMissingMethodProblem
-        "scala.collection.LinearSeqIterator#LazyCell.this",
-        "scala.collection.mutable.PriorityQueue#ResizableArrayAccess.this",
-        "scala.concurrent.BatchingExecutor#AbstractBatch.this",
-        "scala.concurrent.Channel#LinkedList.this",
-        "scala.Enumeration#ValueOrdering.this",
-        "scala.io.Source#RelaxedPosition.this",
-        "scala.collection.IterableOnceOps#Maximized.this", // New in 2.13.11: private inner class
-        "scala.util.Properties.<clinit>",
-        "scala.util.Sorting.scala$util$Sorting$$mergeSort$default$5",
-      ).map(ProblemFilters.exclude[DirectMissingMethodProblem])
-    }
+      // Need to be fixed
+      ProblemFilters.exclude[DirectMissingMethodProblem]("scala.*$extension"),
+      //ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.immutable.SortedMapOps.coll"),
+      //ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.immutable.TreeMap.empty"),
+      //ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.immutable.TreeMap.fromSpecific"),
+      //ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.mutable.ArrayBuilder#ofUnit.addAll"),
+      //ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.mutable.TreeMap.empty"),
+      //ProblemFilters.exclude[IncompatibleResultTypeProblem]("scala.collection.mutable.TreeMap.fromSpecific"),
+      //ProblemFilters.exclude[ReversedMissingMethodProblem]("scala.collection.immutable.SortedMapOps.coll"),
+    )
   )
 
   val ForwardsBreakingChanges: Map[String, Seq[ProblemFilter]] = Map(
