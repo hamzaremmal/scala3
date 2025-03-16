@@ -88,7 +88,7 @@ jobs:
           ./project/scripts/cmdTests
 
   test:
-    runs-on: scala-test
+    runs-on: [self-hosted, Linux]
     container:
       image: lampepfl/dotty:2024-10-18
       options: --cpu-shares 4096
