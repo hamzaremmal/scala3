@@ -55,13 +55,6 @@ env:
 jobs:
   test_non_bootstrapped:
     runs-on: scala-test
-    container:
-      image: lampepfl/dotty:2024-10-18
-      options: --cpu-shares 4096
-      volumes:
-        - ${{ github.workspace }}/../../cache/sbt:/root/.sbt
-        - ${{ github.workspace }}/../../cache/ivy:/root/.ivy2/cache
-        - ${{ github.workspace }}/../../cache/general:/root/.cache
     if: "github.event_name == 'schedule' && github.repository == 'scala/scala3'
          || github.event_name == 'push'
          || (
@@ -74,27 +67,16 @@ jobs:
            && github.repository == 'scala/scala3'
          )"
     steps:
-      - name: Set JDK 17 as default
-        run: echo "/usr/lib/jvm/java-17-openjdk-amd64/bin" >> $GITHUB_PATH
-
-      ## Workaround for https://github.com/actions/runner/issues/2033 (See https://github.com/scala/scala3/pull/19720)
-      - name: Reset existing repo
-        run: |
-          git config --global --add safe.directory $GITHUB_WORKSPACE
-          git -c "http.https://github.com/.extraheader=" fetch --recurse-submodules=no "https://github.com/scala/scala3" && git reset --hard FETCH_HEAD || true
-
-      - name: Checkout cleanup script
+      - name: Configure JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: 'sbt'
+      - name: Configure sbt
+        uses: sbt/setup-sbt@v1
+      - name: Checkout Repository
         uses: actions/checkout@v4
-
-      - name: Cleanup
-        run: .github/workflows/cleanup.sh
-
-      - name: Git Checkout
-        uses: actions/checkout@v4
-
-      - name: Add SBT proxy repositories
-        run: cp -vf .github/workflows/repositories /root/.sbt/ ; true
-
       - name: Test
         # DON'T add dist/Universal/stage!
         # Adding dist/Universal/stage bootstraps the compiler
