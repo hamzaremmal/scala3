@@ -54,7 +54,7 @@ env:
 
 jobs:
   test_non_bootstrapped:
-    runs-on: [self-hosted, Linux]
+    runs-on: scala-test
     container:
       image: lampepfl/dotty:2024-10-18
       options: --cpu-shares 4096
