@@ -67,6 +67,8 @@ jobs:
            && github.repository == 'scala/scala3'
          )"
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       - name: Configure JDK 11
         uses: actions/setup-java@v4
         with:
@@ -75,8 +77,6 @@ jobs:
           cache: 'sbt'
       - name: Configure sbt
         uses: sbt/setup-sbt@v1
-      - name: Checkout Repository
-        uses: actions/checkout@v4
       - name: Test
         # DON'T add dist/Universal/stage!
         # Adding dist/Universal/stage bootstraps the compiler
