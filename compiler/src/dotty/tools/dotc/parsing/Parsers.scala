@@ -2087,6 +2087,7 @@ object Parsers {
      *                     |  ‘(’ NamesAndTypes ‘)’
      *                     |  Refinement
      *                     |  TypeSplice                -- deprecated syntax (since 3.0.0)
+     *                     |  PrefixType
      *                     |  SimpleType1 TypeArgs
      *                     |  SimpleType1 `#' id
      */
@@ -2097,6 +2098,8 @@ object Parsers {
         }
       else if in.token == LBRACE then
         atSpan(in.offset) { RefinedTypeTree(EmptyTree, refinement(indentOK = false)) }
+      else if in.token == IDENTIFIER && nme.raw.isUnary(in.name) then
+        prefixType()
       else if (isSplice)
         splice(isType = true)
       else
@@ -2258,6 +2261,12 @@ object Parsers {
         inBracesOrIndented(refineStatSeq(), rewriteWithColon = true)
       else
         inBraces(refineStatSeq())
+
+    /** PrefixType     ::= [PrefixOperator] SimpleType
+     *  PrefixOperator ::=  ‘-’ | ‘+’ | ‘~’ | ‘!’ (if not backquoted)
+     */
+    def prefixType(): Tree =
+      atSpan(in.offset) { AppliedTypeTree(typeIdent(), List(simpleType())) }
 
     /** TypeBounds ::= [`>:' Type] [`<:' Type]
      *              |  `^`                     -- under captureChecking
