@@ -17,4 +17,4 @@ package scala.annotation
  *  type parameters.
  */
 @deprecatedInheritance("Scheduled for being final in the future", "2.13.0")
-class unspecialized extends scala.annotation.StaticAnnotation
+final class unspecialized extends scala.annotation.StaticAnnotation
