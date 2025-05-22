@@ -61,8 +61,8 @@ object Predef:
     /** Enables an expression of type `T|Null`, where `T` is a subtype of `AnyRef`, to be checked for `null`
      *  using `ne` rather than only `!=`. This is needed because `Null` no longer has
      *  `eq` or `ne` methods, only `==` and `!=` inherited from `Any`. */
-    inline def ne(inline y: AnyRef | Null): Boolean =
-      !(x eq y)
+    inline def ne(y: AnyRef | Null): Boolean =
+      this.eq(x)(y)
 
   extension (opt: Option.type)
     @experimental
