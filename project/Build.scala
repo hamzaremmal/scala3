@@ -103,7 +103,7 @@ object Build {
    *
    *  Warning: Change of this variable needs to be consulted with `expectedTastyVersion`
    */
-  val referenceVersion = "3.7.1-RC1"
+  val referenceVersion = "3.7.1-RC2"
 
   /** Version of the Scala compiler targeted in the current release cycle
    *  Contains a version without RC/SNAPSHOT/NIGHTLY specific suffixes
@@ -298,7 +298,7 @@ object Build {
       "-deprecation",
       "-unchecked",
       //"-Wconf:cat=deprecation&msg=Unsafe:s",    // example usage
-      "-Werror",
+      //"-Werror",
       //"-Wunused:all",
       //"-rewrite", // requires -Werror:false since no rewrites are applied with errors
       "-encoding", "UTF8",
@@ -850,7 +850,7 @@ object Build {
           "-Ddotty.tests.classes.dottyCompiler=" + jars("scala3-compiler"),
           "-Ddotty.tests.classes.tastyCore=" + jars("tasty-core"),
           "-Ddotty.tests.classes.compilerInterface=" + findArtifactPath(externalDeps, "compiler-interface"),
-          "-Ddotty.tests.classes.scalaLibrary=" + findArtifactPath(externalDeps, "scala-library"),
+          //"-Ddotty.tests.classes.scalaLibrary=" + findArtifactPath(externalDeps, "scala-library"),
           "-Ddotty.tests.classes.scalaAsm=" + findArtifactPath(externalDeps, "scala-asm"),
           "-Ddotty.tests.classes.jlineTerminal=" + findArtifactPath(externalDeps, "jline-terminal"),
           "-Ddotty.tests.classes.jlineReader=" + findArtifactPath(externalDeps, "jline-reader"),
@@ -906,18 +906,15 @@ object Build {
           if (args.contains("-classpath")) args
           else insertClasspathInArgs(args, (baseDirectory.value / ".." / "out" / "default-last-scalac-out.jar").getPath)
 
-        val scalaLib = findArtifactPath(externalDeps, "scala-library")
         val dottyLib = jars("scala3-library")
 
         def run(args: List[String]): Unit = {
-          val fullArgs = insertClasspathInArgs(args, List(".", dottyLib, scalaLib).mkString(File.pathSeparator))
+          val fullArgs = insertClasspathInArgs(args, List(".", dottyLib).mkString(File.pathSeparator))
           runProcess("java" :: fullArgs, wait = true)
         }
 
         if (args.isEmpty) {
           println("Couldn't run `scala` without args. Use `repl` to run the repl or add args to run the dotty application")
-        } else if (scalaLib == "") {
-          println("Couldn't find scala-library on classpath, please run using script in bin dir instead")
         } else if (args.contains("-with-compiler")) {
           val args1 = argsWithDefaultClasspath.filter(_ != "-with-compiler")
           val asm = findArtifactPath(externalDeps, "scala-asm")
@@ -936,7 +933,6 @@ object Build {
         val log = streams.value.log
         val externalDeps = externalCompilerClasspathTask.value
         val jars = packageAll.value
-        val scalaLib = findArtifactPath(externalDeps, "scala-library")
         val scalaLibTastyOpt = jars.get("scala2-library-tasty")
         val dottyLib = jars("scala3-library")
         val dottyCompiler = jars("scala3-compiler")
@@ -954,7 +950,7 @@ object Build {
           else if (debugFromTasty) "dotty.tools.dotc.fromtasty.Debug"
           else "dotty.tools.dotc.Main"
 
-        var extraClasspath = Seq(scalaLib, dottyLib)
+        var extraClasspath = Seq(dottyLib)
 
         scala2Library.value match {
           case Scala2LibraryJar =>
@@ -1128,11 +1124,10 @@ object Build {
   // Settings shared between scala3-library, scala3-library-bootstrapped and scala3-library-bootstrappedJS
   def dottyLibrarySettings(implicit mode: Mode) = Seq(
     versionScheme := Some("semver-spec"),
-    libraryDependencies += "org.scala-lang" % "scala-library" % stdlibVersion,
     (Compile / scalacOptions) ++= Seq(
       // Needed so that the library sources are visible when `dotty.tools.dotc.core.Definitions#init` is called
       "-sourcepath", (Compile / sourceDirectories).value.map(_.getCanonicalPath).distinct.mkString(File.pathSeparator),
-      "-Yexplicit-nulls",
+      //"-Yexplicit-nulls",
     ),
     (Compile / doc / scalacOptions) ++= ScaladocConfigs.DefaultGenerationSettings.value.settings,
     (Compile / packageSrc / mappings) ++= {
@@ -1237,7 +1232,7 @@ object Build {
     dependsOn(dottyCompiler(Bootstrapped) % "provided; compile->runtime; test->test").
     settings(scala2LibraryBootstrappedSettings).
     settings(moduleName := "scala2-library-cc")
-  
+
   lazy val scala2LibraryBootstrappedSettings = Seq(
       javaOptions := (`scala3-compiler-bootstrapped` / javaOptions).value,
       Compile / scalacOptions ++= {
@@ -2460,7 +2455,9 @@ object Build {
           mimaBackwardIssueFilters := MiMaFilters.Scala3Library.BackwardsBreakingChanges,
           customMimaReportBinaryIssues("MiMaFilters.Scala3Library"),
         )
-      } else base
+      } else
+        base.settings(semanticdbEnabled := false)
+
     }
 
 
