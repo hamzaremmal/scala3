@@ -77,7 +77,7 @@ class Objects(using Context @constructorOnly):
   val immutableLazyList: Symbol = requiredModule("scala.collection.immutable.LazyList")
   val LazyList_empty: Symbol = immutableLazyList.requiredValue("_empty")
 
-  val allowList: Set[Symbol] = Set(SetNode_EmptySetNode, HashSet_EmptySet, Vector_EmptyIterator, MapNode_EmptyMapNode, HashMap_EmptyMap, LazyList_empty)
+  val allowList: Set[Symbol] = Set(SetNode_EmptySetNode, HashSet_EmptySet, Vector_EmptyIterator, MapNode_EmptyMapNode, HashMap_EmptyMap, LazyList_empty, defn.Predef_Manifest)
 
   // ----------------------------- abstract domain -----------------------------
 

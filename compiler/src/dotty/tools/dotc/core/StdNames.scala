@@ -545,6 +545,7 @@ object StdNames {
     val macroContext : N        = "c"
     val main: N                 = "main"
     val manifest: N             = "manifest"
+    val Manifest: N             = "Manifest"
     val ManifestFactory: N      = "ManifestFactory"
     val manifestToTypeTag: N    = "manifestToTypeTag"
     val map: N                  = "map"
