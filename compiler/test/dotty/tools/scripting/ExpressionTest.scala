@@ -23,7 +23,7 @@ class ExpressionTest:
    * verify -e <expression> works.
    */
   @Test def verifyCommandLineExpression =
-    assumeFalse("Scripts do not yet support Scala 2 library TASTy", Properties.usingScalaLibraryTasty)
+    assumeFalse("Scripts do not yet support Scala 2 library TASTy", true)
     printf("===> verify -e <expression> is properly handled by `dist/bin/scala`\n")
     val expected = "9"
     val expression = s"println(3*3)"
@@ -31,7 +31,7 @@ class ExpressionTest:
     assert(result.contains(expected), s"expression [$expression] did not send [$expected] to stdout. It send [$result].")
 
   @Test def verifyImports: Unit =
-    assumeFalse("Scripts do not yet support Scala 2 library TASTy", Properties.usingScalaLibraryTasty)
+    assumeFalse("Scripts do not yet support Scala 2 library TASTy", true)
     val expressionLines = List(
       "import java.nio.file.Paths",
       "import scala.util.Properties.userDir",

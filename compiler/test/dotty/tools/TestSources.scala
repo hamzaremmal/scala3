@@ -25,8 +25,7 @@ object TestSources {
   def posLazyValsAllowlist: List[String] = loadList(posLazyValsAllowlistFile)
   def posLintingAllowlist: List[String] = loadList(posLintingAllowlistFile)
   def posInitGlobalScala2LibraryTastyExcludelisted: List[String] =
-    if Properties.usingScalaLibraryTasty then loadList(posInitGlobalScala2LibraryTastyExcludelistFile)
-    else Nil
+    loadList(posInitGlobalScala2LibraryTastyExcludelistFile)
 
   // run tests lists
 
@@ -41,8 +40,7 @@ object TestSources {
   def runTestRecheckExcluded: List[String] = loadList(runTestRecheckExcludesFile)
   def runLazyValsAllowlist: List[String] = loadList(runLazyValsAllowlistFile)
   def runMacrosScala2LibraryTastyExcludelisted: List[String] =
-    if Properties.usingScalaLibraryTasty then loadList(runMacrosScala2LibraryTastyExcludelistFile)
-    else Nil
+    loadList(runMacrosScala2LibraryTastyExcludelistFile)
 
   // neg tests lists
 
@@ -51,22 +49,18 @@ object TestSources {
   def negExplicitNullsScala2LibraryTastyExcludelistFile: String = "compiler/test/dotc/neg-explicit-nulls-scala2-library-tasty.excludelist"
 
   def negScala2LibraryTastyExcludelisted: List[String] =
-    if Properties.usingScalaLibraryTasty then loadList(negScala2LibraryTastyExcludelistFile)
-    else Nil
+    loadList(negScala2LibraryTastyExcludelistFile)
   def negInitGlobalScala2LibraryTastyExcludelisted: List[String] =
-    if Properties.usingScalaLibraryTasty then loadList(negInitGlobalScala2LibraryTastyExcludelistFile)
-    else Nil
+    loadList(negInitGlobalScala2LibraryTastyExcludelistFile)
   def negExplicitNullsScala2LibraryTastyExcludelisted: List[String] =
-    if Properties.usingScalaLibraryTasty then loadList(negExplicitNullsScala2LibraryTastyExcludelistFile)
-    else Nil
+    loadList(negExplicitNullsScala2LibraryTastyExcludelistFile)
 
   // patmat tests lists
 
   def patmatExhaustivityScala2LibraryTastyExcludelistFile: String = "compiler/test/dotc/patmat-exhaustivity-scala2-library-tasty.excludelist"
 
   def patmatExhaustivityScala2LibraryTastyExcludelisted: List[String] =
-    if Properties.usingScalaLibraryTasty then loadList(patmatExhaustivityScala2LibraryTastyExcludelistFile)
-    else Nil
+    loadList(patmatExhaustivityScala2LibraryTastyExcludelistFile)
 
   // neg best effort tests lists
 

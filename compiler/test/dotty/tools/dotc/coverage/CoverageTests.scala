@@ -31,7 +31,7 @@ class CoverageTests:
   def checkCoverageStatements(): Unit =
     assumeFalse(
       "FIXME: test output differs when using Scala 2 library TASTy",
-      Properties.usingScalaLibraryTasty
+      true
     )
     checkCoverageIn(rootSrc.resolve("pos"), false)
 
@@ -39,7 +39,7 @@ class CoverageTests:
   def checkInstrumentedRuns(): Unit =
     assumeFalse(
       "FIXME: test output differs when using Scala 2 library TASTy",
-      Properties.usingScalaLibraryTasty
+      true
     )
     checkCoverageIn(rootSrc.resolve("run"), true)
 
