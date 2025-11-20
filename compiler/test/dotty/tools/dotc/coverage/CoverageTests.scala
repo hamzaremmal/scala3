@@ -29,18 +29,10 @@ class CoverageTests:
 
   @Test
   def checkCoverageStatements(): Unit =
-    assumeFalse(
-      "FIXME: test output differs when using Scala 2 library TASTy",
-      true
-    )
     checkCoverageIn(rootSrc.resolve("pos"), false)
 
   @Test
   def checkInstrumentedRuns(): Unit =
-    assumeFalse(
-      "FIXME: test output differs when using Scala 2 library TASTy",
-      true
-    )
     checkCoverageIn(rootSrc.resolve("run"), true)
 
   def checkCoverageIn(dir: Path, run: Boolean)(using TestGroup): Unit =

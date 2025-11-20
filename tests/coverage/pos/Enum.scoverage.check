@@ -585,23 +585,6 @@ covtest
 EnumTypes
 Object
 covtest.EnumTypes
-test
-1090
-1102
-32
-s
-Apply
-false
-0
-false
-s"${list}\\n"
-
-34
-Enum.scala
-covtest
-EnumTypes
-Object
-covtest.EnumTypes
 calculateEarthWeightOnPlanets
 1183
 1222
@@ -613,7 +596,7 @@ false
 false
 earthWeight/Planet.Earth.surfaceGravity
 
-35
+34
 Enum.scala
 covtest
 EnumTypes
@@ -630,7 +613,7 @@ false
 false
 Planet.Earth.surfaceGravity
 
-36
+35
 Enum.scala
 covtest
 EnumTypes
@@ -647,7 +630,7 @@ false
 false
 for p <- Planet.values do\n        println(s"Your weight on $p is ${p.surfaceWeight(mass)}")
 
-37
+36
 Enum.scala
 covtest
 EnumTypes
@@ -664,7 +647,7 @@ false
 false
 Planet.values
 
-38
+37
 Enum.scala
 covtest
 EnumTypes
@@ -681,24 +664,7 @@ false
 false
 println(s"Your weight on $p is ${p.surfaceWeight(mass)}")
 
-39
-Enum.scala
-covtest
-EnumTypes
-Object
-covtest.EnumTypes
-$anonfun
-1271
-1319
-37
-s
-Apply
-false
-0
-false
-s"Your weight on $p is ${p.surfaceWeight(mass)}"
-
-40
+38
 Enum.scala
 covtest
 EnumTypes
@@ -715,7 +681,7 @@ false
 false
 p.surfaceWeight(mass)
 
-41
+39
 Enum.scala
 covtest
 EnumTypes
@@ -732,7 +698,7 @@ false
 false
 def calculateEarthWeightOnPlanets
 
-42
+40
 Enum.scala
 covtest
 EnumTypes
@@ -749,7 +715,7 @@ false
 false
 println("Example 2:")
 
-43
+41
 Enum.scala
 covtest
 EnumTypes
@@ -766,7 +732,7 @@ false
 false
 calculateEarthWeightOnPlanets(80)
 
-44
+42
 Enum.scala
 covtest
 EnumTypes
